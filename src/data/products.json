@@ -1,0 +1,102 @@
+[
+  {
+    "id": "1",
+    "title": "Men's Stylish T-shirt",
+    "description": "Premium cotton blend t-shirt with modern fit. Comfortable and breathable fabric perfect for everyday wear.",
+    "price": 499,
+    "category": "men",
+    "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&h=600&fit=crop",
+    "sizes": ["S", "M", "L", "XL"],
+    "stock": 50
+  },
+  {
+    "id": "2",
+    "title": "Women's Top",
+    "description": "Elegant and comfortable top perfect for casual and semi-formal occasions. Made with high-quality fabric.",
+    "price": 699,
+    "category": "women",
+    "image": "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=500&h=600&fit=crop",
+    "sizes": ["S", "M", "L", "XL"],
+    "stock": 35
+  },
+  {
+    "id": "3",
+    "title": "Kids Wear",
+    "description": "Comfortable and playful clothing for kids. Soft fabric that's gentle on sensitive skin.",
+    "price": 399,
+    "category": "kids",
+    "image": "https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?w=500&h=600&fit=crop",
+    "sizes": ["2-3Y", "4-5Y", "6-7Y", "8-9Y"],
+    "stock": 40
+  },
+  {
+    "id": "4",
+    "title": "Women's Kurti",
+    "description": "Traditional yet modern kurti with beautiful prints. Perfect for festive and casual wear.",
+    "price": 899,
+    "category": "women",
+    "image": "https://images.unsplash.com/photo-1610652492085-b25e2fcf2c86?w=500&h=600&fit=crop",
+    "sizes": ["S", "M", "L", "XL", "XXL"],
+    "stock": 25
+  },
+  {
+    "id": "5",
+    "title": "Men's Casual Shirt",
+    "description": "Classic casual shirt with premium finish. Versatile piece for your wardrobe.",
+    "price": 799,
+    "category": "men",
+    "image": "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=500&h=600&fit=crop",
+    "sizes": ["S", "M", "L", "XL", "XXL"],
+    "stock": 45
+  },
+  {
+    "id": "6",
+    "title": "Women's Dress",
+    "description": "Stunning dress for special occasions. Flattering fit with elegant design.",
+    "price": 1299,
+    "category": "women",
+    "image": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&h=600&fit=crop",
+    "sizes": ["S", "M", "L", "XL"],
+    "stock": 20
+  },
+  {
+    "id": "7",
+    "title": "Kids T-shirt",
+    "description": "Vibrant and comfortable t-shirt for active kids. Durable and easy to maintain.",
+    "price": 349,
+    "category": "kids",
+    "image": "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=500&h=600&fit=crop",
+    "sizes": ["2-3Y", "4-5Y", "6-7Y", "8-9Y", "10-11Y"],
+    "stock": 60
+  },
+  {
+    "id": "8",
+    "title": "Men's Jeans",
+    "description": "Premium denim jeans with perfect fit. Comfortable for all-day wear.",
+    "price": 1099,
+    "category": "men",
+    "image": "https://images.unsplash.com/photo-1542272454315-7f6d4c2f2927?w=500&h=600&fit=crop",
+    "sizes": ["30", "32", "34", "36", "38"],
+    "stock": 30
+  },
+  {
+    "id": "9",
+    "title": "Women's Ethnic Wear",
+    "description": "Beautiful ethnic outfit with intricate details. Perfect for celebrations.",
+    "price": 1599,
+    "category": "women",
+    "image": "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=500&h=600&fit=crop",
+    "sizes": ["S", "M", "L", "XL"],
+    "stock": 15
+  },
+  {
+    "id": "10",
+    "title": "Kids Dress",
+    "description": "Adorable dress for kids with comfortable fit. Perfect for parties and special occasions.",
+    "price": 599,
+    "category": "kids",
+    "image": "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=500&h=600&fit=crop",
+    "sizes": ["2-3Y", "4-5Y", "6-7Y", "8-9Y"],
+    "stock": 35
+  }
+]
