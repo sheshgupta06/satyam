@@ -5,10 +5,52 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCart } from "@/hooks/useCart";
 import { Minus, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 const Cart = () => {
-  const { items, updateQuantity, removeFromCart, total } = useCart();
   const navigate = useNavigate();
+  
+  // Get cart from context, with fallback
+  let cartData: any = { items: [], total: 0, updateQuantity: null, removeFromCart: null, clearCart: null };
+  try {
+    const cart = useCart();
+    cartData = { 
+      items: cart?.items || [],
+      total: cart?.total || 0,
+      updateQuantity: cart?.updateQuantity,
+      removeFromCart: cart?.removeFromCart,
+      clearCart: cart?.clearCart
+    };
+  } catch (e) {
+    console.warn("Cart context not available, using fallback");
+    const saved = JSON.parse(localStorage.getItem("sambhai-cart") || "[]");
+    cartData = {
+      items: saved,
+      total: saved.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0),
+      updateQuantity: (id: string, size: string, qty: number) => {
+        if (qty <= 0) {
+          const updated = saved.filter((i: any) => !(i.id === id && i.size === size));
+          localStorage.setItem("sambhai-cart", JSON.stringify(updated));
+        } else {
+          const idx = saved.findIndex((i: any) => i.id === id && i.size === size);
+          if (idx >= 0) saved[idx].quantity = qty;
+          localStorage.setItem("sambhai-cart", JSON.stringify(saved));
+        }
+        window.location.reload();
+      },
+      removeFromCart: (id: string, size: string) => {
+        const updated = saved.filter((i: any) => !(i.id === id && i.size === size));
+        localStorage.setItem("sambhai-cart", JSON.stringify(updated));
+        window.location.reload();
+      },
+      clearCart: () => {
+        localStorage.setItem("sambhai-cart", "[]");
+        window.location.reload();
+      }
+    };
+  }
+
+  const { items, updateQuantity, removeFromCart, total, clearCart } = cartData;
 
   if (items.length === 0) {
     return (
@@ -61,7 +103,7 @@ const Cart = () => {
                           >
                             <Minus size={16} />
                           </Button>
-                          <span className="w-8 text-center">{item.quantity}</span>
+                          <span className="w-8 text-center font-semibold">{item.quantity}</span>
                           <Button
                             variant="outline"
                             size="icon"
@@ -73,9 +115,14 @@ const Cart = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => removeFromCart(item.id, item.size)}
+                          className="ml-auto text-red-500 hover:text-red-700 hover:bg-red-100/20"
+                          onClick={() => {
+                            removeFromCart(item.id, item.size);
+                            toast.success(`❌ Removed "${item.title}" from cart`);
+                          }}
+                          title="Remove from cart"
                         >
-                          <Trash2 size={18} className="text-destructive" />
+                          <Trash2 size={18} />
                         </Button>
                       </div>
                     </div>
@@ -115,6 +162,18 @@ const Cart = () => {
                   onClick={() => navigate("/checkout")}
                 >
                   Proceed to Checkout
+                </Button>
+
+                <Button
+                  className="w-full mt-3"
+                  variant="destructive"
+                  size="lg"
+                  onClick={() => {
+                    clearCart();
+                    toast.success("🗑️ Cart cleared");
+                  }}
+                >
+                  Clear Cart
                 </Button>
               </CardContent>
             </Card>

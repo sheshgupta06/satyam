@@ -4,10 +4,25 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
-import products from "@/data/products.json";
 
 const Home = () => {
-  const [trendingProducts, setTrendingProducts] = useState(products.slice(0, 4));
+  const [trendingProducts, setTrendingProducts] = useState([]);
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const res = await fetch("http://localhost:5000/api/products");
+        const data = await res.json();
+
+        // Trending: latest 4
+        setTrendingProducts(data.slice(0, 4));
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      }
+    }
+
+    fetchProducts();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -39,17 +54,20 @@ const Home = () => {
       {/* Trending Products */}
       <section className="container mx-auto px-4 py-16">
         <h2 className="text-3xl font-bold mb-8 text-foreground">Trending Products</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {trendingProducts.map((product) => (
             <ProductCard
-              key={product.id}
-              id={product.id}
-              title={product.title}
+              key={product._id}
+              id={product._id}
+              title={product.name}
               price={product.price}
               image={product.image}
+              sizes={product.sizes}
             />
           ))}
         </div>
+
         <div className="text-center mt-8">
           <Link to="/products">
             <Button variant="outline">View All Products</Button>

@@ -1,110 +1,168 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { useCart } from "@/hooks/useCart";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import productsData from "@/data/products.json";
+import { useCart } from "@/hooks/useCart";
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
-  const product = productsData.find((p) => p.id === id);
-  const [selectedSize, setSelectedSize] = useState("");
 
-  if (!product) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
-            <Button onClick={() => navigate("/products")}>Back to Products</Button>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
+  // Get cart from context, with fallback
+  let addToCart: any = null;
+  try {
+    const cart = useCart();
+    addToCart = cart?.addToCart;
+  } catch (e) {
+    console.warn("Cart context not available, using fallback");
   }
 
-  const handleAddToCart = () => {
-    if (!selectedSize) {
-      toast.error("Please select a size");
-      return;
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedSize, setSelectedSize] = useState("");
+  const [quantity, setQuantity] = useState(1);
+
+  useEffect(() => {
+    async function fetchProduct() {
+      try {
+        const res = await fetch(`http://localhost:5000/api/products/${id}`);
+        const data = await res.json();
+        setProduct(data);
+      } catch (err) {
+        toast.error("Failed to load product");
+      } finally {
+        setLoading(false);
+      }
     }
 
-    addToCart({
-      id: product.id,
-      title: product.title,
-      price: product.price,
-      image: product.image,
-      size: selectedSize,
-    });
+    fetchProduct();
+  }, [id]);
 
-    toast.success("Added to cart!");
-  };
+  if (loading) return <div className="p-10 text-center">Loading...</div>;
+
+  if (!product) return <div className="p-10 text-center">Product not found.</div>;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       <Header />
-      
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-          {/* Product Image */}
-          <div className="aspect-[3/4] overflow-hidden rounded-lg">
-            <img
-              src={product.image}
-              alt={product.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
 
-          {/* Product Details */}
-          <div className="flex flex-col">
-            <h1 className="text-3xl font-bold mb-2 text-foreground">{product.title}</h1>
-            <p className="text-2xl font-semibold text-price mb-4">₹{product.price}</p>
-            
-            <p className="text-foreground/80 mb-6">{product.description}</p>
+      <div className="container mx-auto px-6 py-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <img
+            src={product.image}
+            alt={product.name}
+            className="w-full h-[450px] object-cover rounded-xl shadow"
+          />
 
-            {/* Size Selection */}
-            <div className="mb-6">
-              <h3 className="font-medium mb-3 text-foreground">Select Size</h3>
-              <div className="flex gap-2 flex-wrap">
-                {product.sizes.map((size) => (
-                  <Button
-                    key={size}
-                    variant={selectedSize === size ? "default" : "outline"}
-                    onClick={() => setSelectedSize(size)}
-                    className="min-w-[60px]"
-                  >
-                    {size}
-                  </Button>
-                ))}
-              </div>
-            </div>
+          <div>
+            <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
 
-            {/* Stock Info */}
-            <p className="text-sm text-muted-foreground mb-6">
-              {product.stock > 0 ? `${product.stock} items in stock` : "Out of stock"}
+            <p className="text-xl text-primary font-semibold mb-4">
+              ₹{product.price}
             </p>
 
-            {/* Add to Cart Button */}
-            <Button
-              size="lg"
-              onClick={handleAddToCart}
-              disabled={product.stock === 0}
-              className="w-full md:w-auto"
-            >
-              Add to Cart
-            </Button>
+            <p className="text-gray-500 mb-6">{product.description}</p>
+
+            {product.sizes && product.sizes.length > 0 && (
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">Select Size:</label>
+                <div className="flex gap-2 flex-wrap">
+                  {product.sizes.split(",").map((size: string) => (
+                    <button
+                      key={size.trim()}
+                      onClick={() => setSelectedSize(size.trim())}
+                      className={`px-4 py-2 border rounded transition ${
+                        selectedSize === size.trim()
+                          ? "bg-primary text-white border-primary"
+                          : "border-gray-300 hover:border-primary"
+                      }`}
+                    >
+                      {size.trim()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* QUANTITY SELECTOR */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Quantity:</label>
+              <Input
+                type="number"
+                min="1"
+                max="100"
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-20"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                onClick={() => {
+                  if (!addToCart) {
+                    // Fallback
+                    const currentCart = JSON.parse(localStorage.getItem("sambhai-cart") || "[]");
+                    const newItem = { id: product._id, title: product.name, price: product.price, image: product.image, size: selectedSize || "One Size", quantity };
+                    const existing = currentCart.find((i: any) => i.id === product._id && i.size === (selectedSize || "One Size"));
+                    if (existing) existing.quantity += quantity;
+                    else currentCart.push(newItem);
+                    localStorage.setItem("sambhai-cart", JSON.stringify(currentCart));
+                    window.dispatchEvent(new CustomEvent('cart_update', { detail: currentCart }));
+                  } else {
+                    addToCart({
+                      id: product._id,
+                      title: product.name,
+                      price: product.price,
+                      image: product.image,
+                      size: selectedSize || "",
+                      quantity
+                    });
+                  }
+                  toast.success("✅ Added to cart");
+                }}
+                className="flex-1 bg-gray-600 hover:bg-gray-700"
+              >
+                Add to Cart
+              </Button>
+
+              <Button
+                onClick={() => {
+                  if (!addToCart) {
+                    const currentCart = JSON.parse(localStorage.getItem("sambhai-cart") || "[]");
+                    const newItem = { id: product._id, title: product.name, price: product.price, image: product.image, size: selectedSize || "One Size", quantity };
+                    const existing = currentCart.find((i: any) => i.id === product._id && i.size === (selectedSize || "One Size"));
+                    if (existing) existing.quantity += quantity;
+                    else currentCart.push(newItem);
+                    localStorage.setItem("sambhai-cart", JSON.stringify(currentCart));
+                    window.dispatchEvent(new CustomEvent('cart_update', { detail: currentCart }));
+                  } else {
+                    addToCart({
+                      id: product._id,
+                      title: product.name,
+                      price: product.price,
+                      image: product.image,
+                      size: selectedSize || "",
+                      quantity
+                    });
+                  }
+                  toast.success("✅ Processing your order...");
+                  setTimeout(() => navigate("/checkout"), 500);
+                }}
+                className="flex-1 bg-green-600 hover:bg-green-700"
+              >
+                Buy Now
+              </Button>
+            </div>
           </div>
         </div>
-      </main>
+      </div>
 
       <Footer />
-    </div>
+    </>
   );
 };
 

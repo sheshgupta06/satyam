@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -8,152 +8,172 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
+import { QrCode, Loader2 } from "lucide-react";
+
+// Razorpay Script Load
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 
 const Checkout = () => {
-  const { items, total, clearCart } = useCart();
+  const { cart, total, clearCart } = useCart();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  
+  // Address Form Data
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    pincode: "",
+    name: "", email: "", phone: "", address: "", apartment: "", area: "", village: "", landmark: "", city: "", pincode: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Basic validation
-    if (!formData.name || !formData.email || !formData.phone || !formData.address) {
-      toast.error("Please fill in all required fields");
+  useEffect(() => {
+    if (cart.length === 0) navigate("/shop");
+  }, [cart, navigate]);
+
+  const handleChange = (e: any) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  // --- HANDLE RAZORPAY PAYMENT ---
+  const handlePayment = async () => {
+    // Ensure terms accepted
+    if (!acceptTerms) {
+      toast.error("कृपया शर्तें स्वीकार करें: एक बार खरीदा गया सामान वापस नहीं होगा।");
+      return;
+    }
+    // 1. Validate Address
+    if (!formData.name || !formData.phone || !formData.address || !formData.pincode) {
+      toast.error("❌ Please fill full address details");
       return;
     }
 
-    // Simulate order creation (Cash on Delivery)
-    const orderId = `ORD${Date.now()}`;
-    localStorage.setItem("lastOrderId", orderId);
-    clearCart();
-    navigate("/order-success");
-  };
+    // 2. Check Login
+    const user = JSON.parse(sessionStorage.getItem("userInfo") || "{}");
+    if (!user._id) {
+        toast.error("Please Login first");
+        navigate("/user-login");
+        return;
+    }
 
-  const handleStripeCheckout = async () => {
+    setLoading(true);
+
     try {
-      const response = await fetch("http://localhost:4242/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: items.map((it) => ({ title: it.title, price: it.price, quantity: it.quantity })),
-          success_url: `${window.location.origin}/order-success`,
-          cancel_url: `${window.location.origin}/checkout`,
-        }),
-      });
+        // 3. Create Order on Backend
+        const res = await loadRazorpayScript();
+        if (!res) { toast.error("Razorpay SDK failed"); return; }
 
-      const data = await response.json();
-      if (data.url) {
-        // Redirect to Stripe Checkout
-        window.location.href = data.url;
-      } else {
-        toast.error("Failed to start payment session");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Payment failed to start");
+        const orderData = await fetch("http://localhost:5000/api/payment/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ amount: total }),
+        });
+        const order = await orderData.json();
+
+        // 4. Open Razorpay Modal
+        const options = {
+            key: "rzp_test_RmPRD1kkOtZ8RO", // <--- YAHAN APNI KEY ID DAALO
+            amount: order.amount,
+            currency: "INR",
+            name: "Skluxewear",
+            description: "Scan QR to Pay",
+            order_id: order.id,
+            
+            // 5. ON SUCCESS
+            handler: async function (response: any) {
+                toast.success("✅ Payment Successful!");
+                
+                // Save Order to Database
+                await fetch("http://localhost:5000/api/orders/place", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        userId: user._id,
+                        customerName: formData.name,
+                        email: formData.email || user.email,
+                        customerPhone: formData.phone,
+                        customerAddress: [
+                          formData.address,
+                          formData.apartment ? `Apt: ${formData.apartment}` : null,
+                          formData.area ? `Area: ${formData.area}` : null,
+                          formData.village ? `Village: ${formData.village}` : null,
+                          formData.landmark ? `Landmark: ${formData.landmark}` : null,
+                          formData.city,
+                          formData.pincode
+                        ].filter(Boolean).join(', '),
+                        items: cart,
+                        amount: total,
+                        paymentMethod: "UPI (Razorpay)",
+                        paymentId: response.razorpay_payment_id,
+                        status: "Paid & Processing" // Auto Verified!
+                    }),
+                });
+
+                clearCart();
+                navigate("/profile");
+            },
+            prefill: {
+                name: formData.name,
+                email: formData.email || user.email,
+                contact: formData.phone,
+            },
+            theme: { color: "#22c55e" },
+            // Sirf UPI/QR dikhane ki koshish (Note: Razorpay hamesha saare option dikhata hai, par hum user ko bolenge QR use kare)
+            method: {
+                netbanking: false,
+                card: false,
+                wallet: false,
+                upi: true, 
+            }
+        };
+
+        const rzp1 = new (window as any).Razorpay(options);
+        rzp1.open();
+        
+    } catch (error) {
+        console.error(error);
+        toast.error("Payment Failed");
+    } finally {
+        setLoading(false);
     }
   };
 
-  if (items.length === 0) {
-    navigate("/cart");
-    return null;
-  }
-
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-black text-white">
       <Header />
-      
       <main className="flex-1 container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-foreground">Checkout</h1>
+        <h1 className="text-3xl font-bold mb-8 text-green-500">Checkout</h1>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Checkout Form */}
+          {/* Address Form */}
           <div className="lg:col-span-2">
-            <Card>
+            <Card className="bg-gray-900 border-gray-800">
               <CardContent className="p-6">
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Full Name *</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      required
-                    />
+                <h2 className="text-xl font-bold text-white mb-4">Shipping Details</h2>
+                <form className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><Label className="text-gray-400">Full Name *</Label><Input id="name" value={formData.name} onChange={handleChange} className="bg-black border-gray-700 text-white" required /></div>
+                    <div><Label className="text-gray-400">Phone Number *</Label><Input id="phone" type="tel" value={formData.phone} onChange={handleChange} className="bg-black border-gray-700 text-white" required /></div>
                   </div>
-
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="phone">Phone Number *</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="address">Address *</Label>
-                    <Input
-                      id="address"
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="city">City</Label>
-                      <Input
-                        id="city"
-                        value={formData.city}
-                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      />
+                  <div><Label className="text-gray-400">Email</Label><Input id="email" type="email" value={formData.email} onChange={handleChange} className="bg-black border-gray-700 text-white" /></div>
+                    <div><Label className="text-gray-400">Address *</Label><Input id="address" value={formData.address} onChange={handleChange} className="bg-black border-gray-700 text-white" required /></div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div><Label className="text-gray-400">Apartment / House No.</Label><Input id="apartment" value={formData.apartment} onChange={handleChange} className="bg-black border-gray-700 text-white" /></div>
+                      <div><Label className="text-gray-400">Area / Locality</Label><Input id="area" value={formData.area} onChange={handleChange} className="bg-black border-gray-700 text-white" /></div>
                     </div>
-
-                    <div>
-                      <Label htmlFor="pincode">Pincode</Label>
-                      <Input
-                        id="pincode"
-                        value={formData.pincode}
-                        onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                      <div><Label className="text-gray-400">Village / Colony</Label><Input id="village" value={formData.village} onChange={handleChange} className="bg-black border-gray-700 text-white" /></div>
+                      <div><Label className="text-gray-400">Landmark</Label><Input id="landmark" value={formData.landmark} onChange={handleChange} className="bg-black border-gray-700 text-white" /></div>
                     </div>
-                  </div>
-
-                  <Button type="submit" size="lg" className="w-full">
-                    Place Order (Cash on Delivery)
-                  </Button>
-                  <Button
-                    type="button"
-                    size="lg"
-                    variant="outline"
-                    className="w-full mt-2"
-                    onClick={handleStripeCheckout}
-                  >
-                    Pay with Card
-                  </Button>
+                    <div className="grid grid-cols-2 gap-4 mt-2">
+                      <div><Label className="text-gray-400">City</Label><Input id="city" value={formData.city} onChange={handleChange} className="bg-black border-gray-700 text-white" /></div>
+                      <div><Label className="text-gray-400">Pincode *</Label><Input id="pincode" type="number" value={formData.pincode} onChange={handleChange} className="bg-black border-gray-700 text-white" required /></div>
+                    </div>
                 </form>
               </CardContent>
             </Card>
@@ -161,33 +181,52 @@ const Checkout = () => {
 
           {/* Order Summary */}
           <div>
-            <Card>
+            <Card className="bg-gray-900 border-gray-800 sticky top-24">
               <CardContent className="p-6">
-                <h2 className="text-xl font-bold mb-4 text-foreground">Order Summary</h2>
-                
-                <div className="space-y-3 mb-4">
-                  {items.map((item) => (
-                    <div key={`${item.id}-${item.size}`} className="flex justify-between text-sm">
-                      <span className="text-foreground">
-                        {item.title} ({item.size}) x{item.quantity}
-                      </span>
-                      <span className="text-foreground">₹{item.price * item.quantity}</span>
+                <h2 className="text-xl font-bold mb-4 text-white">Order Summary</h2>
+                <div className="space-y-3 mb-4 max-h-60 overflow-y-auto">
+                  {cart.map((item) => (
+                    <div key={`${item.id}-${item.size}`} className="flex justify-between text-sm text-gray-300">
+                      <span>{item.name} ({item.size}) x{item.quantity}</span>
+                      <span>₹{item.price * item.quantity}</span>
                     </div>
                   ))}
                 </div>
-
-                <div className="border-t pt-4">
-                  <div className="flex justify-between text-lg font-bold text-foreground">
-                    <span>Total</span>
-                    <span>₹{total}</span>
-                  </div>
+                <div className="border-t border-gray-700 pt-4 mb-6 flex justify-between text-lg font-bold text-green-400">
+                    <span>Total Pay</span><span>₹{total}</span>
                 </div>
+
+                {/* ONE-LINE TERMS + CHECKBOX */}
+                <div className="flex items-start mb-4">
+                  <input
+                    id="acceptTerms"
+                    type="checkbox"
+                    checked={acceptTerms}
+                    onChange={(e) => setAcceptTerms(e.target.checked)}
+                    className="mt-1 mr-2 h-4 w-4"
+                  />
+                  <label htmlFor="acceptTerms" className="text-xs text-gray-400">
+                    एक बार खरीदा गया सामान वापस नहीं होगा।
+                  </label>
+                </div>
+
+                {/* ONLY RAZORPAY BUTTON */}
+                <Button 
+                    onClick={handlePayment} 
+                    className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-6 text-lg"
+                    disabled={loading || !acceptTerms}
+                >
+                    {loading ? <Loader2 className="animate-spin mr-2"/> : <QrCode className="mr-2 h-6 w-6" />} 
+                    Pay via QR / UPI
+                </Button>
+
+                <p className="text-xs text-center text-gray-500 mt-3">Secured by Razorpay</p>
+
               </CardContent>
             </Card>
           </div>
         </div>
       </main>
-
       <Footer />
     </div>
   );

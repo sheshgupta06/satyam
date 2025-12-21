@@ -1,92 +1,62 @@
-import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
-import { Button } from "@/components/ui/button";
-import productsData from "@/data/products.json";
 
 const Products = () => {
-  const [searchParams] = useSearchParams();
-  const [products, setProducts] = useState(productsData);
-  const [category, setCategory] = useState(searchParams.get("category") || "all");
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const cat = searchParams.get("category") || "all";
-    setCategory(cat);
-    
-    if (cat === "all") {
-      setProducts(productsData);
-    } else {
-      setProducts(productsData.filter((p) => p.category === cat));
+    async function fetchProducts() {
+      try {
+        const res = await fetch("http://localhost:5000/api/products");
+        const data = await res.json();
+        setProducts(data);
+      } catch (err) {
+        console.error("Failed to load products", err);
+      } finally {
+        setLoading(false);
+      }
     }
-  }, [searchParams]);
 
-  const handleCategoryChange = (newCategory: string) => {
-    setCategory(newCategory);
-    if (newCategory === "all") {
-      setProducts(productsData);
-    } else {
-      setProducts(productsData.filter((p) => p.category === newCategory));
-    }
-  };
+    fetchProducts();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="p-10 text-center text-xl font-semibold">
+        Loading products...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-foreground">
-          {category === "all" ? "All Products" : `${category.charAt(0).toUpperCase() + category.slice(1)}'s Collection`}
-        </h1>
 
-        {/* Category Filters */}
-        <div className="flex gap-2 mb-8 flex-wrap">
-          <Button
-            variant={category === "all" ? "default" : "outline"}
-            onClick={() => handleCategoryChange("all")}
-          >
-            All
-          </Button>
-          <Button
-            variant={category === "men" ? "default" : "outline"}
-            onClick={() => handleCategoryChange("men")}
-          >
-            Men
-          </Button>
-          <Button
-            variant={category === "women" ? "default" : "outline"}
-            onClick={() => handleCategoryChange("women")}
-          >
-            Women
-          </Button>
-          <Button
-            variant={category === "kids" ? "default" : "outline"}
-            onClick={() => handleCategoryChange("kids")}
-          >
-            Kids
-          </Button>
-        </div>
+      <section className="container mx-auto px-4 py-14">
+        <h1 className="text-4xl font-bold mb-10">All Products</h1>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              id={product.id}
-              title={product.title}
-              price={product.price}
-              image={product.image}
-            />
-          ))}
-        </div>
-
-        {products.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-muted-foreground text-lg">No products found in this category.</p>
+        {products.length === 0 ? (
+          <div className="text-center text-gray-500 text-xl">
+            No products found.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {products.map((p: any) => (
+              <ProductCard
+                key={p._id}
+                id={p._id}
+                title={p.name}
+                price={p.price}
+                image={p.image}
+                sizes={p.sizes || "One Size"}
+              />
+            ))}
           </div>
         )}
-      </main>
+      </section>
 
       <Footer />
     </div>

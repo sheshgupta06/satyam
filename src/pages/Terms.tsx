@@ -50,9 +50,17 @@ const Terms = () => {
 
             <section>
               <h2 className="text-xl font-semibold mb-3">6. Returns and Refunds</h2>
-              <p className="text-muted-foreground">
-                Products can be returned within 7 days of delivery for a full refund, provided they are in original condition with tags attached. Shipping costs are non-refundable.
-              </p>
+              <div className="text-muted-foreground space-y-4">
+                <p>
+                  Products can be returned within 7 days of delivery for a full refund, provided they are in original condition with tags attached. Shipping costs are non-refundable.
+                </p>
+                <div className="bg-red-50 border border-red-200 rounded p-4 mt-4">
+                  <p className="font-semibold text-red-800 mb-2">⚠️ Important:</p>
+                  <p className="text-red-700">
+                    <strong>Once a product is delivered, NO RETURNS or REFUNDS will be accepted under any circumstances.</strong> Please inspect the product carefully upon delivery. All sales are final after delivery confirmation.
+                  </p>
+                </div>
+              </div>
             </section>
 
             <section>

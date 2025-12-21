@@ -2,55 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 10%;
+    /* --- BACKGROUND (Pura Black) --- */
+    --background: 0 0% 0%; 
+    --foreground: 142 76% 96%; /* Text White/Light Green */
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    /* --- CARDS (Thoda sa halka Black taaki alag dikhe) --- */
+    --card: 0 0% 5%;
+    --card-foreground: 142 76% 96%;
+ 
+    --popover: 0 0% 5%;
+    --popover-foreground: 142 76% 96%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    /* --- PRIMARY COLOR (Matrix Green) 🟩 --- */
+    --primary: 142 70% 50%;
+    --primary-foreground: 0 0% 0%; /* Button ke upar text Black rahega */
+ 
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 142 76% 96%;
+ 
+    --muted: 0 0% 10%;
+    --muted-foreground: 142 60% 50%; /* Thoda dim green */
+ 
+    --accent: 142 70% 50%;
+    --accent-foreground: 0 0% 0%;
+ 
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 142 76% 96%;
 
-    --primary: 340 82% 52%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 10%;
-
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
-
-    --accent: 340 82% 52%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 340 82% 52%;
-
+    /* Borders Greenish-Grey */
+    --border: 142 30% 20%;
+    --input: 142 30% 20%;
+    --ring: 142 70% 50%;
+ 
     --radius: 0.5rem;
-
-    /* SAM BHAI Brand Colors */
-    --brand-pink: 340 82% 52%;
-    --brand-pink-light: 340 82% 96%;
-    --brand-text: 0 0% 20%;
-    --price-color: 340 82% 52%;
   }
 }
-
+ 
 @layer base {
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
   }

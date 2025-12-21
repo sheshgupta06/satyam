@@ -1,6 +1,14 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const Footer = () => {
+  const location = useLocation();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    setIsAdmin(!!sessionStorage.getItem("sambhai-admin"));
+  }, [location]);
+
   return (
     <footer className="bg-secondary mt-16 py-12">
       <div className="container mx-auto px-4">
@@ -24,8 +32,8 @@ const Footer = () => {
             <h3 className="font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/products" className="text-muted-foreground hover:text-primary transition-colors">
-                  All Products
+                <Link to="/shop" className="hover:text-green-400 transition-colors">
+                 All Products
                 </Link>
               </li>
               <li>
@@ -44,11 +52,19 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold mb-4">Admin</h3>
             <ul className="space-y-2">
-              <li>
-                <Link to="/admin-login" className="text-muted-foreground hover:text-primary transition-colors">
-                  Admin Login
-                </Link>
-              </li>
+              {isAdmin ? (
+                <li>
+                  <Link to="/admin" className="text-muted-foreground hover:text-primary transition-colors">
+                    Admin Panel
+                  </Link>
+                </li>
+              ) : (
+                <li>
+                  <Link to="/admin-login" className="text-muted-foreground hover:text-primary transition-colors">
+                    Admin Login
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
         </div>

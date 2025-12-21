@@ -82,7 +82,7 @@ const Contact = () => {
                   <Mail className="text-primary mt-1" />
                   <div>
                     <h3 className="font-semibold mb-1 text-foreground">Email</h3>
-                    <p className="text-muted-foreground">Satyamverma1933@gmail.com</p>
+                    <p className="text-muted-foreground">Email: <a href="mailto:Satyamverma1933@gmail.com" className="text-primary">satyamverma1933@gmail.com</a></p>
                   </div>
                 </div>
               </CardContent>
