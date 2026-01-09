@@ -53,6 +53,7 @@ cloudinary.config({
 // --- 3. CONNECTIONS ---
 
 // Connect Database with retry logic
+let dbConnected = false;
 const connectDB = async () => {
   try {
     await mongoose.connect(MONGO_URI, {
@@ -62,13 +63,16 @@ const connectDB = async () => {
       w: 'majority'
     });
     console.log("✅ MongoDB Connected Successfully");
+    dbConnected = true;
   } catch (err) {
     console.error("❌ DB Connection Error:", err.message);
-    console.log("Retrying in 5 seconds...");
-    setTimeout(connectDB, 5000);
+    console.log("Retrying in 10 seconds...");
+    setTimeout(connectDB, 10000);
   }
 };
-connectDB();
+
+// Start trying to connect but don't block server startup
+connectDB().catch(err => console.error("Initial DB connection attempt failed:", err.message));
 
 // Setup Email Transporter
 const transporter = nodemailer.createTransport({
