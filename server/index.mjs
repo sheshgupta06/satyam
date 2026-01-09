@@ -56,7 +56,10 @@ cloudinary.config({
 const connectDB = async () => {
   try {
     await mongoose.connect(MONGO_URI, {
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 30000,
+      connectTimeoutMS: 30000,
+      retryWrites: true,
+      w: 'majority'
     });
     console.log("✅ MongoDB Connected Successfully");
   } catch (err) {
@@ -132,6 +135,11 @@ const orderSchema = new mongoose.Schema({
 const Order = mongoose.model('Order', orderSchema);
 
 // --- 5. API ROUTES ---
+
+// Health Check (Server Alive है check करने के लिए)
+app.get('/', (req, res) => {
+  res.json({ message: "✅ Server is running!", timestamp: new Date() });
+});
 
 // === A. AUTHENTICATION ===
 
@@ -506,4 +514,23 @@ app.delete('/api/orders/:id', async (req, res) => {
 });
 
 // --- START SERVER ---
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+const server = app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+    process.exit(0);
+  });
+});
