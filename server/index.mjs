@@ -40,10 +40,14 @@ const EMAIL_USER = process.env.EMAIL_USER || "tumhara_email@gmail.com";
 const EMAIL_PASS = process.env.EMAIL_PASS || "xxxx xxxx xxxx xxxx"; 
 
 // Cloudinary Settings (Cloudinary Dashboard se lo)
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'dgzvjlntc';
+const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY || '256752887112449';
+const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || 'pgjz1PeVPFr4fiZv2RiieTu46So';
+
 cloudinary.config({ 
-  cloud_name: 'dgzvjlntc', 
-  api_key: '256752887112449', 
-  api_secret: 'pgjz1PeVPFr4fiZv2RiieTu46So' 
+  cloud_name: CLOUDINARY_CLOUD_NAME, 
+  api_key: CLOUDINARY_API_KEY, 
+  api_secret: CLOUDINARY_API_SECRET
 });
 
 // --- 3. CONNECTIONS ---
@@ -70,7 +74,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Setup Razorpay
-const razorpay = new Razorpay({ key_id: "rzp_test_RmPRD1kkOtZ8RO" , key_secret: "9UeKB57zZuMVxqU0iVq0axX5" });
+const razorpay = new Razorpay({ key_id: RAZORPAY_KEY_ID, key_secret: RAZORPAY_SECRET });
 
 // Setup Multer (Temporary Local Storage)
 // Hum pehle image ko 'uploads' folder me layenge, fir Cloudinary bhejenge
