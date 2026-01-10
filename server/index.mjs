@@ -23,12 +23,12 @@ app.use(cors());
 const PORT = process.env.PORT || 5000;
 
 // Admin Credentials
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@gmail.com";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "satyamverma1933@gmail.com";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Saty@mverm@3193";
 
 // MongoDB Link (Atlas Online wala) - Replace with your actual credentials
 // Format: mongodb+srv://username:password@cluster.mongodb.net/database_name
-const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://sheshkumar969613_db_user:7uQmuNfaxJor1tks@shesh.k4cst9o.mongodb.net/?appName=Shesh";
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://satyamverma1933_db_user:rawdMAXCf4RzmPak@cluster0.8d5amse.mongodb.net/?appName=Cluster0";
 // Example: mongodb+srv://admin:password123@cluster0.abc123.mongodb.net/india_bazar?retryWrites=true&w=majority 
 
 // Razorpay Keys (Razorpay Dashboard se lo)
@@ -36,13 +36,13 @@ const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || "rzp_test_RmPRD1kkOtZ8RO"
 const RAZORPAY_SECRET = process.env.RAZORPAY_SECRET || "9UeKB57zZuMVxqU0iVq0axX5"; 
 
 // Email Settings (App Password wala)
-const EMAIL_USER = process.env.EMAIL_USER || "tumhara_email@gmail.com";
+const EMAIL_USER = process.env.EMAIL_USER || "satyamverma1933@gmail.com";
 const EMAIL_PASS = process.env.EMAIL_PASS || "xxxx xxxx xxxx xxxx"; 
 
 // Cloudinary Settings (Cloudinary Dashboard se lo)
-const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'dgzvjlntc';
-const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY || '256752887112449';
-const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || 'pgjz1PeVPFr4fiZv2RiieTu46So';
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'dpowbdhao';
+const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY || '966189251759394';
+const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || 'Jzgd3xsWtLbF1jD1LPjg_oLEhpk';
 
 cloudinary.config({ 
   cloud_name: CLOUDINARY_CLOUD_NAME, 
@@ -151,7 +151,7 @@ app.get('/', (req, res) => {
 app.get('/setup-admin', async (req, res) => {
   try {
     if(await User.findOne({ email: ADMIN_EMAIL })) return res.send("Admin already exists.");
-    await new User({ name: "Super Admin", email: ADMIN_EMAIL, mobile: "0000000000", password: ADMIN_PASSWORD, isAdmin: true }).save();
+    await new User({ name: "Super Admin", email: ADMIN_EMAIL, mobile: "8922001933", password: ADMIN_PASSWORD, isAdmin: true }).save();
     res.send(`Admin Created: ${ADMIN_EMAIL} / ${ADMIN_PASSWORD}`);
   } catch(e) { res.send(e.message); }
 });
