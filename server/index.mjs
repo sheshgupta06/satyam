@@ -519,8 +519,9 @@ app.delete('/api/orders/:id', async (req, res) => {
 
 // --- START SERVER ---
 const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
+
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
