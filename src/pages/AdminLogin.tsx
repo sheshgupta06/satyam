@@ -32,7 +32,7 @@ const AdminLogin = () => {
     try {
       console.log("🔐 Admin Login Attempt with:", { email, password });
 
-      const response = await fetch("http://localhost:5000/api/admin/login", {
+      const response = await fetch("https://satyam-production-066b.up.railway.app/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 

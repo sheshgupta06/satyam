@@ -27,7 +27,7 @@ const UserProfile = () => {
   const fetchOrders = async (userId: string) => {
     setLoadingOrders(true);
     try {
-        const res = await fetch("http://localhost:5000/api/orders");
+        const res = await fetch("https://satyam-production-066b.up.railway.app/api/orders");
         const data = await res.json();
         // Filter by User ID
         const userOrders = data.filter((order: any) => order.userId === userId);
@@ -54,7 +54,7 @@ const UserProfile = () => {
     if (!confirm(confirmMsg)) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/orders/${orderId}/cancel`, {
+      const res = await fetch(`https://satyam-production-066b.up.railway.app/api/orders/${orderId}/cancel`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 

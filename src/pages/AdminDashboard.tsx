@@ -29,9 +29,9 @@ const AdminDashboard = () => {
   const fetchData = async (isManual = false) => {
     try {
         const [ordersRes, productsRes, usersRes] = await Promise.all([
-            fetch("http://localhost:5000/api/orders"),
-            fetch("http://localhost:5000/api/products"),
-            fetch("http://localhost:5000/api/users")
+            fetch("https://satyam-production-066b.up.railway.app/api/orders"),
+            fetch("https://satyam-production-066b.up.railway.app/api/products"),
+            fetch("https://satyam-production-066b.up.railway.app/api/users")
         ]);
         setOrders(await ordersRes.json());
         setProducts(await productsRes.json());
@@ -47,7 +47,7 @@ const AdminDashboard = () => {
     fd.append("image", file);
     setUploading(true);
     try {
-        const res = await fetch("http://localhost:5000/api/upload", { method: "POST", body: fd });
+        const res = await fetch("https://satyam-production-066b.up.railway.app/api/upload", { method: "POST", body: fd });
         const data = await res.json();
         setFormData({ ...formData, image: data.imagePath });
         toast.success("Image Uploaded");
@@ -75,7 +75,7 @@ const AdminDashboard = () => {
                 image: formData.image
             };
 
-            const res = await fetch(`http://localhost:5000/api/products/${editingId}`, {
+            const res = await fetch(`https://satyam-production-066b.up.railway.app/api/products/${editingId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(updateData)
@@ -101,7 +101,7 @@ const AdminDashboard = () => {
     // Agar Editing ID nahi hai, to NEW ADD karo
     else {
         try {
-            const res = await fetch("http://localhost:5000/api/products", {
+            const res = await fetch("https://satyam-production-066b.up.railway.app/api/products", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData)
@@ -140,7 +140,7 @@ const AdminDashboard = () => {
 
   const handleDeleteProduct = async (id: string) => {
     if(confirm("Delete this product?")) {
-        await fetch(`http://localhost:5000/api/products/${id}`, { method: "DELETE" });
+        await fetch(`https://satyam-production-066b.up.railway.app/api/products/${id}`, { method: "DELETE" });
         toast.success("Deleted");
         fetchData();
     }
@@ -149,7 +149,7 @@ const AdminDashboard = () => {
   const handleDeleteOrder = async (id: string) => {
     if(confirm("Delete this order?")) {
         try {
-            await fetch(`http://localhost:5000/api/orders/${id}`, { method: "DELETE" });
+            await fetch(`https://satyam-production-066b.up.railway.app/api/orders/${id}`, { method: "DELETE" });
             toast.success("Order Deleted");
             fetchData();
         } catch (error) {
@@ -159,7 +159,7 @@ const AdminDashboard = () => {
   };
 
   const updateStatus = async (id: string, status: string) => {
-    await fetch(`http://localhost:5000/api/orders/${id}/status`, {
+    await fetch(`https://satyam-production-066b.up.railway.app/api/orders/${id}/status`, {
         method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status })
     });
     toast.success(`Status: ${status}`);

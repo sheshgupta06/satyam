@@ -68,7 +68,7 @@ const Checkout = () => {
         const res = await loadRazorpayScript();
         if (!res) { toast.error("Razorpay SDK failed"); return; }
 
-        const orderData = await fetch("http://localhost:5000/api/payment/create", {
+        const orderData = await fetch("https://satyam-production-066b.up.railway.app/api/payment/create", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ amount: total }),
@@ -89,7 +89,7 @@ const Checkout = () => {
                 toast.success("✅ Payment Successful!");
                 
                 // Save Order to Database
-                await fetch("http://localhost:5000/api/orders/place", {
+                await fetch("https://satyam-production-066b.up.railway.app/api/orders/place", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({

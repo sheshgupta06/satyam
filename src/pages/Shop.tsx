@@ -9,7 +9,7 @@ const Shop = () => {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/products")
+    fetch("https://satyam-production-066b.up.railway.app/api/products")
       .then((res) => res.json())
       .then((data) => {
         if (category) {
@@ -28,7 +28,7 @@ const Shop = () => {
         <h1 className="text-3xl font-bold mb-8 text-green-500 capitalize">{category ? `${category} Collection` : "All Products"}</h1>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {products.map((product: any) => (
-              <ProductCard key={product._id} id={product._id} title={product.name} price={product.price} image={product.image.startsWith('http') ? product.image : `http://localhost:5000${product.image}`} sizes={product.sizes}/>
+              <ProductCard key={product._id} id={product._id} title={product.name} price={product.price} image={product.image.startsWith('http') ? product.image : `https://satyam-production-066b.up.railway.app${product.image}`} sizes={product.sizes}/>
             ))}
         </div>
       </main>

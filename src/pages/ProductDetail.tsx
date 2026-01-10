@@ -28,7 +28,7 @@ const ProductDetail = () => {
   useEffect(() => {
     async function fetchProduct() {
       try {
-        const res = await fetch(`http://localhost:5000/api/products/${id}`);
+        const res = await fetch(`https://satyam-production-066b.up.railway.app/api/products/${id}`);
         const data = await res.json();
         setProduct(data);
       } catch (err) {
